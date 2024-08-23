@@ -1,0 +1,18 @@
+services:
+  db:
+    image: postgres:13
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_DB: piscineds
+      POSTGRES_USER: macrespo
+      POSTGRES_PASSWORD: mysecretpassword
+    volumes:
+      - type: bind
+        source: ./data_warehouse
+        target: /opt
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080

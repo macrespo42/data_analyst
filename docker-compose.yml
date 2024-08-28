@@ -16,3 +16,9 @@ services:
     restart: always
     ports:
       - 8080:8080
+  python:
+    image: python:3
+    volumes:
+      - type: bind
+        source: src
+        target: /usr/src/app

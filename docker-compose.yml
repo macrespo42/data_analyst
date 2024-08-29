@@ -17,7 +17,7 @@ services:
     ports:
       - 8080:8080
   python:
-    image: python:3
+    build: src/python-container 
     volumes:
       - type: bind
         source: src

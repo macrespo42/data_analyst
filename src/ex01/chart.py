@@ -65,13 +65,13 @@ def get_purchase_avg_prices():
     connection = connect_db()
     cursor = connection.cursor()
 
-    cursor.execute(
-        """SELECT date_trunc('day', event_time) AS event_month, avg(price) as total_price
+    cursor.execute("""SELECT 
+            event_time::date AS day, 
+            SUM(price) * 0.8 / COUNT(DISTINCT user_id) AS avg_spend_per_customer
         FROM customers
-        WHERE event_type='purchase'
-        AND date_trunc('day', event_time) BETWEEN '2022-10-01'::TIMESTAMP AND '2023-02-28'::TIMESTAMP
-        GROUP BY event_month;"""
-    )
+        WHERE event_type = 'purchase'
+        GROUP BY day
+        ORDER BY day;""")
 
     purchases = cursor.fetchall()
 
@@ -99,7 +99,7 @@ def make_histogram(x: list[str], y: list[float]) -> None:
     formatted_dates = df["dates"].dt.strftime("%b %Y")
 
     plt.figure(figsize=(10, 6))
-    plt.bar(formatted_dates, df["prices"], color="skyblue")
+    plt.bar(formatted_dates, df["prices"], color="#b2b2ff")
 
     plt.ylabel("Price")
     plt.title("Price evolution between October 2022 and January 2023")
@@ -108,29 +108,33 @@ def make_histogram(x: list[str], y: list[float]) -> None:
 
 
 def make_filled_plot(x: list[str], y: list[float]) -> None:
-    df = pd.DataFrame(data={"dates": x, "avg_prices": y})
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, y, color="#b2b2ff")
+    plt.fill_between(x, y, color="#b2b2ff")
+    plt.ylabel("Average Spend/Customer in A")
 
-    plt.plot(df["dates"], df["avg_prices"])
-    plt.fill_between(df["dates"], df["avg_prices"])
+    tick_positions = [0, len(x) // 4, 2 * len(x) // 4, 3 * len(x) // 4]
+    tick_labels = ["Oct", "Nov", "Dec", "Jan"]
+    plt.xticks(tick_positions, tick_labels)
 
-    plt.savefig("gay.png")
+    plt.savefig("filled.png")
 
 
 def main():
-    # purchases = get_purchases()
-    # purchase_dates = [x[0] for x in purchases]
-    # customer_count = [y[1] for y in purchases]
-    # make_chart(purchase_dates, customer_count)
-    #
-    # purchases = get_purchase_prices()
-    # purchase_dates = [x[0] for x in purchases]
-    # purchase_price = [y[1] for y in purchases]
-    # make_histogram(purchase_dates, purchase_price)
-
-    purchases = get_purchase_avg_prices()
+    purchases = get_purchases()
     purchase_dates = [x[0] for x in purchases]
-    purchase_avg_price = [y[1] for y in purchases]
-    make_filled_plot(purchase_dates, purchase_avg_price)
+    customer_count = [y[1] for y in purchases]
+    make_chart(purchase_dates, customer_count)
+
+    purchases = get_purchase_prices()
+    purchase_dates = [x[0] for x in purchases]
+    purchase_price = [y[1] for y in purchases]
+    make_histogram(purchase_dates, purchase_price)
+
+    data = get_purchase_avg_prices()
+    dates = [row[0].strftime("%Y-%m-%d") for row in data]
+    average_spend_per_customer = [row[1] for row in data]
+    make_filled_plot(dates, average_spend_per_customer)
 
 
 if __name__ == "__main__":

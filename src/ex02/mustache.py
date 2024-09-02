@@ -31,6 +31,17 @@ def get_items_price() -> list[tuple[Any, ...]]:
     return cursor.fetchall()
 
 
+def get_avg_basket() -> list[tuple[Any, ...]]:
+    connection = connect_db()
+
+    cursor = connection.cursor()
+    cursor.execute("""SELECT user_id, AVG(price) AS avg_basket
+        FROM customers
+        WHERE event_type = 'cart'
+        GROUP BY user_id;""")
+    return cursor.fetchall()
+
+
 def describe_prices(prices: list[float]) -> None:
     count = len(prices)
     mean_price = np.mean(prices)
@@ -49,8 +60,8 @@ def describe_prices(prices: list[float]) -> None:
     print(f"max {max_price:.6f}")
 
 
-def boxplots(prices: list[float]) -> None:
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+def boxplots(prices: list[float], average_basket: list[float]) -> None:
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(14, 6))
     ax1.boxplot(prices, vert=False)
 
     ax1.set_title("Boxplot")
@@ -75,6 +86,19 @@ def boxplots(prices: list[float]) -> None:
     ax2.set_xlabel("price")
     ax2.set_title("Interquartile range (IQR)")
 
+    ax3.boxplot(
+        prices,
+        vert=False,
+        widths=0.5,
+        notch=True,
+        showfliers=False,
+    )
+    ax3.set_title("Average basket price")
+    ax3.set_yticks([])
+    ax3.set_xticks(range(26, 43, 2))
+    ax3.set_xlabel("price")
+
+    plt.tight_layout()
     plt.savefig("boxplot.png")
 
 
@@ -82,8 +106,11 @@ def main() -> None:
     data = get_items_price()
     prices = [float(price[0]) for price in data]
 
+    data = get_avg_basket()
+    avg_basket = [float(basket[0]) for basket in data]
+
     describe_prices(prices)
-    boxplots(prices)
+    boxplots(prices, avg_basket)
 
 
 if __name__ == "__main__":

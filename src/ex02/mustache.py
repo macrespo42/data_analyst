@@ -1,5 +1,6 @@
 from typing import Any
 
+import matplotlib.pyplot as plt
 import numpy as np
 import psycopg2
 
@@ -48,11 +49,22 @@ def describe_prices(prices: list[float]) -> None:
     print(f"max {max_price:.6f}")
 
 
+def make_boxplots(prices: list[float]) -> None:
+    plt.boxplot(prices, vert=False)
+
+    plt.title("Basic boxplot")
+    plt.yticks([])
+    plt.xlabel("price")
+    plt.xticks(range(-50, 301, 50))
+    plt.savefig("boxplot.png")
+
+
 def main() -> None:
     data = get_items_price()
     prices = [float(price[0]) for price in data]
 
     describe_prices(prices)
+    make_boxplots(prices)
 
 
 if __name__ == "__main__":

@@ -49,13 +49,32 @@ def describe_prices(prices: list[float]) -> None:
     print(f"max {max_price:.6f}")
 
 
-def make_boxplots(prices: list[float]) -> None:
-    plt.boxplot(prices, vert=False)
+def boxplots(prices: list[float]) -> None:
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    ax1.boxplot(prices, vert=False)
 
-    plt.title("Basic boxplot")
-    plt.yticks([])
-    plt.xlabel("price")
-    plt.xticks(range(-50, 301, 50))
+    ax1.set_title("Boxplot")
+    ax1.set_yticks([])
+    ax1.set_xlabel("price")
+    ax1.set_xticks(range(-50, 301, 50))
+
+    boxprops = dict(facecolor="green", edgecolor="black")
+    medianprops = dict(linestyle="-", linewidth=2, color="black")
+    ax2.boxplot(
+        prices,
+        vert=False,
+        widths=0.5,
+        notch=True,
+        boxprops=boxprops,
+        medianprops=medianprops,
+        showfliers=False,
+        patch_artist=True,
+    )
+    ax2.set_yticks([])
+    ax2.set_xticks(range(0, 13, 2))
+    ax2.set_xlabel("price")
+    ax2.set_title("Interquartile range (IQR)")
+
     plt.savefig("boxplot.png")
 
 
@@ -64,7 +83,7 @@ def main() -> None:
     prices = [float(price[0]) for price in data]
 
     describe_prices(prices)
-    make_boxplots(prices)
+    boxplots(prices)
 
 
 if __name__ == "__main__":

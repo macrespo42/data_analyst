@@ -26,30 +26,34 @@ def get_items_price() -> list[tuple[Any, ...]]:
     connection = connect_db()
 
     cursor = connection.cursor()
-    cursor.execute("SELECT event_type, price FROM customers;")
+    cursor.execute("SELECT price FROM customers WHERE event_type='purchase';")
     return cursor.fetchall()
 
 
-def describe_prices() -> None:
-    data = get_items_price()
-    prices = [price for event_type, price in data if event_type == "purchase"]
-
+def describe_prices(prices: list[float]) -> None:
     count = len(prices)
-    # mean_price = np.mean(prices)
-    # std_price = np.std(prices)
-    # min_price = np.min(prices)
-    # quartiles = np.percentile(prices, [25, 50, 75])
-    # max_price = np.max(prices)
+    mean_price = np.mean(prices)
+    std_price = np.std(prices)
+    min_price = np.min(prices)
+    quartiles = np.percentile(prices, [25, 50, 75])
+    max_price = np.max(prices)
 
     print(f"count {count:.6f}")
-    # print(f"mean {mean_price:.6f}")
-    # print(f"std {std_price:.6f}")
-    # print(f"min {min_price:.6f}")
-    # print(f"25% {quartiles[0]:.6f}")
-    # print(f"50% {quartiles[1]:.6f}")
-    # print(f"75% {quartiles[2]:.6f}")
-    # print(f"max {max_price:.6f}")
+    print(f"mean {mean_price:.6f}")
+    print(f"std {std_price:.6f}")
+    print(f"min {min_price:.6f}")
+    print(f"25% {quartiles[0]:.6f}")
+    print(f"50% {quartiles[1]:.6f}")
+    print(f"75% {quartiles[2]:.6f}")
+    print(f"max {max_price:.6f}")
+
+
+def main() -> None:
+    data = get_items_price()
+    prices = [float(price[0]) for price in data]
+
+    describe_prices(prices)
 
 
 if __name__ == "__main__":
-    describe_prices()
+    main()

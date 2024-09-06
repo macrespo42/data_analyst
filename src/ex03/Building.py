@@ -1,4 +1,4 @@
-from os import walk
+from typing import Any
 
 import matplotlib.pyplot as plt
 import psycopg2
@@ -22,7 +22,7 @@ def connect_db():
         exit(1)
 
 
-def get_customers_orders_frequencies() -> None:
+def get_customers_orders_frequencies() -> list[tuple[Any, ...]]:
     connection = connect_db()
 
     cursor = connection.cursor()
@@ -36,7 +36,7 @@ def get_customers_orders_frequencies() -> None:
     return cursor.fetchall()
 
 
-def get_customers_spends_frequencies() -> None:
+def get_customers_spends_frequencies() -> list[tuple[Any, ...]]:
     connection = connect_db()
 
     cursor = connection.cursor()

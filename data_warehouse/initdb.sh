@@ -10,6 +10,7 @@ function get_subject() {
   curl https://cdn.intra.42.fr/document/document/25745/subject.zip -o /opt/subject.zip
   unzip /opt/subject.zip
   mv subject /opt/
+  curl https://cdn.intra.42.fr/document/document/17535/data_2023_feb.csv -o /opt/data_2023_feb.csv
 }
 
 function import_csv_to_db() {

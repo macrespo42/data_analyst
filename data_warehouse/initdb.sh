@@ -33,6 +33,7 @@ function main() {
   psql -U macrespo -d piscineds -h localhost -f /opt/items_table.sql -w
   psql -U macrespo -d piscineds -h localhost -f /opt/customers_table.sql -w
   psql -U macrespo -d piscineds -h localhost -f /opt/fusion.sql -w
+  psql -U macrespo -d piscineds -h localhost -f /opt/remove_duplicates.sql -w
 }
 
 main

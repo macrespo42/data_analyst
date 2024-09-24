@@ -35,10 +35,21 @@ def get_avg_basket() -> list[tuple[Any, ...]]:
     connection = connect_db()
 
     cursor = connection.cursor()
-    cursor.execute("""SELECT user_id, AVG(price) AS avg_basket
-        FROM customers
-        WHERE event_type = 'cart'
-        GROUP BY user_id;""")
+    cursor.execute(
+        """
+        SELECT 
+            AVG(session_total) AS average_basket_price
+        FROM (
+            SELECT 
+                user_id, 
+                SUM(price) AS session_total
+            FROM customers
+            WHERE event_type = 'purchase'
+            GROUP BY user_id, user_session
+        ) AS session_totals
+        GROUP BY user_id
+                """
+    )
     return cursor.fetchall()
 
 
@@ -66,7 +77,6 @@ def boxplots(prices: list[float], average_basket: list[float]) -> None:
 
     ax1.set_title("Boxplot")
     ax1.set_yticks([])
-    ax1.set_xlabel("price")
     ax1.set_xticks(range(-50, 301, 50))
 
     boxprops = dict(facecolor="green", edgecolor="black")
@@ -83,11 +93,10 @@ def boxplots(prices: list[float], average_basket: list[float]) -> None:
     )
     ax2.set_yticks([])
     ax2.set_xticks(range(0, 13, 2))
-    ax2.set_xlabel("price")
     ax2.set_title("Interquartile range (IQR)")
 
     ax3.boxplot(
-        prices,
+        average_basket,
         vert=False,
         widths=0.5,
         notch=True,
@@ -95,8 +104,7 @@ def boxplots(prices: list[float], average_basket: list[float]) -> None:
     )
     ax3.set_title("Average basket price")
     ax3.set_yticks([])
-    ax3.set_xticks(range(26, 43, 2))
-    ax3.set_xlabel("price")
+    # ax3.set_xticks(range(27, 43, 2))
 
     plt.tight_layout()
     plt.savefig("boxplot.png")

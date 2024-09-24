@@ -61,14 +61,12 @@ def barplot(orders, spends) -> None:
     ax1.set_xticks(range(0, 40, 10))
     ax1.set_yticks(range(0, 60_001, 10_000))
 
-    ax2.hist(spends, bins=5)
+    ax2.hist(spends, bins=5, width=45, alpha=0.3)
     ax2.grid(True, zorder=-1)
     ax2.set_title("frequency of customers spends")
     ax2.set_ylabel("customers")
     ax2.set_xlabel("monetary value in A")
-    ax2.set_yticks(range(0, 40_001, 5_000))
     ax2.set_xticks(range(0, 201, 50))
-    ax2.set_ylim(40_000)
 
     plt.savefig("order_frequencies.png")
 

@@ -27,11 +27,24 @@ def get_customers_orders_frequencies() -> list[tuple[Any, ...]]:
 
     cursor = connection.cursor()
     cursor.execute(
-        """SELECT count(*)
-        FROM customers
-        WHERE event_type='purchase'
-        GROUP BY user_id
-        HAVING count(*) BETWEEN 0 and 40;"""
+        """WITH purchase_counts AS (
+            SELECT user_id, COUNT(*) AS purchase_count
+            FROM customers
+            WHERE event_type = 'purchase'
+            GROUP BY user_id
+        )
+        SELECT
+            CASE
+                WHEN purchase_count < 10 THEN 0
+                WHEN purchase_count >= 10 AND purchase_count < 20 THEN 10
+                WHEN purchase_count >= 20 AND purchase_count < 30 THEN 20
+                WHEN purchase_count >= 30 AND purchase_count < 40 THEN 30
+                ELSE 40
+            END AS purchase_group,
+            COUNT(*) AS users_count
+        FROM purchase_counts
+        GROUP BY purchase_group
+        ORDER BY purchase_group;"""
     )
     return cursor.fetchall()
 
@@ -41,28 +54,38 @@ def get_customers_spends_frequencies() -> list[tuple[Any, ...]]:
 
     cursor = connection.cursor()
     cursor.execute(
-        """SELECT sum(price)
-        FROM customers
-        WHERE event_type='purchase'
-        GROUP BY user_id
-        HAVING sum(price) BETWEEN 0 and 201;"""
+        """WITH purchase_counts AS (
+            SELECT user_id, sum(price) AS purchase_count
+            FROM customers
+            WHERE event_type = 'purchase'
+            GROUP BY user_id
+        )
+        SELECT
+            CASE
+                WHEN purchase_count < 50 THEN 0
+                WHEN purchase_count >= 50 AND purchase_count < 100 THEN 50
+                WHEN purchase_count >= 100 AND purchase_count < 150 THEN 100
+                WHEN purchase_count >= 150 AND purchase_count < 200 THEN 150
+                ELSE 200
+            END AS purchase_group,
+            COUNT(*) AS users_count
+        FROM purchase_counts
+        GROUP BY purchase_group
+        ORDER BY purchase_group;"""
     )
     return cursor.fetchall()
 
 
-def barplot(orders, spends) -> None:
+def barplot(orders_groups, orders, spends_groups, spends) -> None:
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
-    ax1.hist(orders, bins=5, width=8, alpha=0.3)
-    ax1.grid(True, zorder=-1)
+    ax1.bar(orders_groups, orders, width=8)
     ax1.set_title("frequency of customers order")
     ax1.set_ylabel("customers")
     ax1.set_xlabel("frequency")
     ax1.set_xticks(range(0, 40, 10))
-    ax1.set_yticks(range(0, 60_001, 10_000))
 
-    ax2.hist(spends, bins=5, width=45, alpha=0.3)
-    ax2.grid(True, zorder=-1)
+    ax2.bar(spends_groups, spends, width=45)
     ax2.set_title("frequency of customers spends")
     ax2.set_ylabel("customers")
     ax2.set_xlabel("monetary value in A")
@@ -73,12 +96,14 @@ def barplot(orders, spends) -> None:
 
 def main() -> None:
     data = get_customers_orders_frequencies()
-    orders = [float(order[0]) for order in data]
+    X = [float(order[0]) for order in data]
+    y = [float(order[1]) for order in data]
 
     data = get_customers_spends_frequencies()
-    spends = [float(spend[0]) for spend in data]
+    X1 = [float(order[0]) for order in data]
+    y1 = [float(order[1]) for order in data]
 
-    barplot(orders, spends)
+    barplot(X, y, X1, y1)
 
 
 if __name__ == "__main__":
